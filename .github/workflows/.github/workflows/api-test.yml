@@ -1,25 +1,42 @@
-name: GoRest API CI/CD Pipeline
+name: Automated API Testing with Newman
 
 on:
   push:
+    branches: [ main, master ]
   pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
-  api-testing:
+  test-api:
     runs-on: ubuntu-latest
+
     steps:
-      - name: 1. Checkout mã nguồn
+      - name: Checkout repository code
         uses: actions/checkout@v4
 
-      - name: 2. Cài đặt Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - name: 3. Cài đặt Newman CLI
-        run: npm install -g newman
-
-      - name: 4. Chạy bộ Test tự động với Data-Driven (users.csv)
+      - name: Install Newman and Reporter
         run: |
-          newman run Collection.json -e Environment.json -d users.csv --env-var "token=${{ secrets.GOREST_TOKEN }}"
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+
+      - name: Run Postman Collection via Newman
+        run: |
+          newman run 2274802011008_NguyenQuangVinh_GoRest.postman_collection.json \
+            -e 2274802011008_NguyenQuangVinh_GoRest_Env.postman_environment.json \
+            -d users.csv \
+            --env-var "token=${{ secrets.GOREST_TOKEN }}" \
+            -r cli,htmlextra \
+            --reporter-htmlextra-export newman-report.html
+
+      - name: Upload Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-html-report
+          path: newman-report.html
