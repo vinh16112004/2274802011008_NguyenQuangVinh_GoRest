@@ -22,4 +22,4 @@ jobs:
 
       - name: 4. Chạy bộ Test tự động với Data-Driven (users.csv)
         run: |
-          newman run Collection.json -e Environment.json -d users.csv --env-var "token=${{ secrets.GOREST_TOKEN }}"
+          newman run 2274802011008_NguyenQuangVinh_GoRest.postman_collection.json -e 2274802011008_NguyenQuangVinh_GoRest_Env.postman_environment.json -d users.csv --env-var "token=${{ secrets.GOREST_TOKEN }}"
