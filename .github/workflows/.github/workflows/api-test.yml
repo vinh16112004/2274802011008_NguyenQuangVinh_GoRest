@@ -2,10 +2,8 @@ name: Automated API Testing with Newman
 
 on:
   push:
-    branches: [ main, master ]
   pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:
+  workflow_dispatch: # Cho phép bấm nút Run workflow thủ công trên tab Actions
 
 jobs:
   test-api:
