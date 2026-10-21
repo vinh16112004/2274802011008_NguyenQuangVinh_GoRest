@@ -1,0 +1,59 @@
+name: Shift-Right Production Monitor
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Chạy tự động mỗi 1 giờ
+  workflow_dispatch: # Cho phép bấm chạy bằng tay trên giao diện
+
+jobs:
+  monitor-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: 2. Cài đặt Node.js & Newman
+        run: npm install -g newman
+
+      - name: 3. Kiểm tra sức khỏe API GET /users (Response Time < 1500ms)
+        run: |
+          cat << 'EOF' > monitor_collection.json
+          {
+            "info": {
+              "name": "GoRest_Production_Monitor",
+              "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+            },
+            "item": [
+              {
+                "name": "Health Check - GET Users",
+                "event": [
+                  {
+                    "listen": "test",
+                    "script": {
+                      "type": "text/javascript",
+                      "exec": [
+                        "pm.test(\"Hệ thống hoạt động bình thường (Status 200 OK)\", function () {",
+                        "    pm.response.to.have.status(200);",
+                        "});",
+                        "pm.test(\"Thời gian phản hồi dưới 1500ms\", function () {",
+                        "    pm.expect(pm.response.responseTime).to.be.below(1500);",
+                        "});"
+                      ]
+                    }
+                  }
+                ],
+                "request": {
+                  "method": "GET",
+                  "header": [],
+                  "url": {
+                    "raw": "https://gorest.co.in/public/v2/users",
+                    "protocol": "https",
+                    "host": ["gorest", "co", "in"],
+                    "path": ["public", "v2", "users"]
+                  }
+                }
+              }
+            ]
+          }
+          EOF
+          newman run monitor_collection.json
